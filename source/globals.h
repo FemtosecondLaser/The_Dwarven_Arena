@@ -5,6 +5,8 @@
 #include <string.h>
 #include <SDL.h>
 
+#define PI 3.14159265f
+
 /* stringification */
 #define TO_STRING(x) STRING(x)
 #define STRING(x) #x
