@@ -5,6 +5,10 @@
 #include "animation_set.h"
 #include "time_controller.h"
 
+// labels
+#define L_PROTAGONIST "protagonist"
+#define L_ENEMY "enemy"
+
 struct Entity {
 	enum Entity_Direction {
 		DIRECTION_UP,

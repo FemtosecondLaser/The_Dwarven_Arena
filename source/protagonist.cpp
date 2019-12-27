@@ -19,7 +19,7 @@ const char* Protagonist::a_attack_right = "attack_right";
 const char* Protagonist::a_death = "death";
 
 Protagonist::Protagonist(Animation_Set* animation_set) {
-	label = "Protagonist";
+	label = L_PROTAGONIST;
 	this->animation_set = animation_set;
 	x = Globals::screen_width / 2;
 	y = Globals::screen_height / 2;
@@ -138,7 +138,7 @@ void Protagonist::update_animation() {
 void Protagonist::update_dealt_damage() {
 	if (is_active && current_health > 0 && invincible_timer <= 0) {
 		for (int i = 0; i < entity_count; i++) {
-			if ((*(entities + i))->is_active && (*(entities + i))->label == "enemy") {
+			if ((*(entities + i))->is_active && (*(entities + i))->label == L_ENEMY) {
 				Living_Entity* enemy = (Living_Entity*)(*(entities + 1));
 				if (enemy->damage > 0 && is_colliding(&current_collision_box, &enemy->hitbox)) {
 					current_health -= enemy->damage;
