@@ -14,8 +14,7 @@ int Animation::get_next_frame_index(int frame_index) {
 
 Frame* Animation::get_next_frame(Frame* frame) {
 	if (frame_count == 0) return nullptr;
-	if ((frame - frames) == (frame_count - 1)) return frames;
-	return frame + 1;
+	return get_frame(get_next_frame_index(frame->index));
 }
 
 int Animation::get_last_frame_index() {

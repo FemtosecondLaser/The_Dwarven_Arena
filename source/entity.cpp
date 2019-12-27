@@ -23,9 +23,9 @@ void Entity::move(float angle) {
 	is_moving = 1;
 	move_speed = move_speed_upper_limit;
 	this->angle = angle;
-	Entity_Move_Direction new_direction = angle_to_direction(this->angle);
-	if (move_direction != new_direction) {
-		move_direction = new_direction;
+	Entity_Direction new_direction = angle_to_direction(this->angle);
+	if (direction != new_direction) {
+		direction = new_direction;
 		animate(state, 0);
 	}
 }
@@ -134,7 +134,7 @@ int Entity::is_colliding(SDL_Rect* first, SDL_Rect* second) {
 	return SDL_IntersectRect(first, second, nullptr);
 }
 
-Entity::Entity_Move_Direction Entity::angle_to_direction(float angle) {
+Entity::Entity_Direction Entity::angle_to_direction(float angle) {
 	if ((angle >= 0 && angle <= 45) || (angle >= 315 && angle <= 360)) return DIRECTION_RIGHT;
 	else if (angle >= 45 && angle <= 135) return DIRECTION_DOWN;
 	else if (angle >= 135 && angle <= 225) return DIRECTION_LEFT;

@@ -6,14 +6,18 @@
 #include "time_controller.h"
 
 struct Entity {
-	enum Entity_Move_Direction {
+	enum Entity_Direction {
 		DIRECTION_UP,
 		DIRECTION_DOWN,
 		DIRECTION_LEFT,
 		DIRECTION_RIGHT
 	};
 	enum Entity_State {
-		UNDEFINED
+		STATE_IDLING,
+		STATE_WALKING,
+		STATE_DASHING,
+		STATE_ATTACKING,
+		STATE_BEING_DEAD
 	};
 
 	static Entity** entities;
@@ -22,7 +26,7 @@ struct Entity {
 	Entity_State state;
 	float x, y;
 	int is_moving;
-	Entity_Move_Direction move_direction;
+	Entity_Direction direction;
 	float angle;
 	float move_speed;
 	float move_speed_upper_limit;
@@ -53,7 +57,7 @@ struct Entity {
 	static float distance_between_entities(Entity* first, Entity* second);
 	static float angle_between_entities(Entity* first, Entity* second);
 	static int is_colliding(SDL_Rect* first, SDL_Rect* second);
-	static Entity_Move_Direction angle_to_direction(float angle);
+	static Entity_Direction angle_to_direction(float angle);
 	static float angle_between_points(float first_x, float first_y, float second_x, float second_y);
 	static float angle_between_rectangles(SDL_Rect* first, SDL_Rect* second);
 	static int compare_entities(Entity* first, Entity* second);

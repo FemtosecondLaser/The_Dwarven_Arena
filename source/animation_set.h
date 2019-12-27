@@ -14,7 +14,7 @@ struct Animation_Set {
 
 	~Animation_Set();
 
-	Animation* get_animation(char* animation_name);
+	Animation* get_animation(const char* animation_name);
 	void load(char* animation_set_file_name);
 };
 

@@ -6,7 +6,7 @@ Animation_Set::~Animation_Set() {
 	if (animations) delete[] animations;
 }
 
-Animation* Animation_Set::get_animation(char* animation_name) {
+Animation* Animation_Set::get_animation(const char* animation_name) {
 	for (int i = 0; i < animation_count; i++)
 		if (strcmp(animation_name, (animations + i)->name) == 0) return animations + i;
 	return nullptr;

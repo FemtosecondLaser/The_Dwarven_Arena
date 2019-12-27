@@ -13,6 +13,8 @@ void Frame::render(SDL_Texture* texture, int x, int y) {
 void Frame::load(FILE* stream) {
 	char buffer[ANIMATION_DATA_FILE_PARSING_BUFFER];
 
+	/* index %d */
+	const char* str_index = "index";
 	/* clip_zone %d %d %d %d */
 	const char* str_clip_zone = "clip_zone";
 	/* duration	 %f */
@@ -29,7 +31,9 @@ void Frame::load(FILE* stream) {
 	const char* str_frame_end = "frame_end";
 
 	while (fgets(buffer, sizeof(buffer), stream)) {
-		if (strncmp(buffer, str_clip_zone, sizeof(str_clip_zone)))
+		if (strncmp(buffer, str_index, sizeof(str_index)))
+			sscanf(buffer, "index %d", &index);
+		else if (strncmp(buffer, str_clip_zone, sizeof(str_clip_zone)))
 			sscanf(buffer, "clip_zone %d %d %d %d", &(clip_zone.x), &(clip_zone.y), &(clip_zone.w), &(clip_zone.h));
 		else if (strncmp(buffer, str_duration, sizeof(str_duration)))
 			sscanf(buffer, "duration %f", &duration);

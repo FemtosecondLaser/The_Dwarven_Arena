@@ -7,6 +7,7 @@
 #include "globals.h"
 
 struct Frame {
+	int index;
 	SDL_Rect clip_zone;
 	float duration;
 	SDL_Point offset;
