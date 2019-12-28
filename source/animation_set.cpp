@@ -34,7 +34,9 @@ void Animation_Set::load(char* animation_set_file_name) {
 				sprite_sheet_name = new char[sprite_sheet_file_name_length + 1];
 				sscanf(buffer, "sprite_sheet_file_name %d %s", &sprite_sheet_file_name_length, sprite_sheet_name);
 				if (sprite_sheet) SDL_DestroyTexture(sprite_sheet);
-				sprite_sheet = IMG_LoadTexture(Globals::renderer, Globals::get_resource_path(sprite_sheet_name));
+				char* sprite_sheet_path = Globals::get_resource_path(sprite_sheet_name);
+				sprite_sheet = IMG_LoadTexture(Globals::renderer, sprite_sheet_path);
+				delete[] sprite_sheet_path;
 			}
 			else if (strncmp(buffer, str_animation_count, sizeof(str_animation_count))) {
 				sscanf(buffer, "animation_count %d", &animation_count);

@@ -51,7 +51,7 @@ void Protagonist::update() {
 }
 
 void Protagonist::attack() {
-	if (current_health > 0 && state == STATE_WALKING || STATE_IDLING) {
+	if (current_health > 0 && (state == STATE_WALKING || state == STATE_IDLING)) {
 		is_moving = false;
 		frame_timer = 0;
 		animate(STATE_ATTACKING, 1);
@@ -59,7 +59,7 @@ void Protagonist::attack() {
 }
 
 void Protagonist::dash() {
-	if (current_health > 0 && state == STATE_WALKING || STATE_IDLING) {
+	if (current_health > 0 && (state == STATE_WALKING || state == STATE_IDLING)) {
 		is_moving = false;
 		frame_timer = 0;
 		slide_angle = angle;
@@ -125,7 +125,7 @@ void Protagonist::update_animation() {
 		frame_timer += Time_Controller::time_controller.delta_time;
 		if (frame_timer >= current_frame->duration) {
 			if (current_frame->index == current_animation->get_last_frame_index()) {
-				if (state == STATE_ATTACKING || STATE_DASHING) animate(STATE_WALKING, 1);
+				if (state == STATE_ATTACKING || state == STATE_DASHING) animate(STATE_WALKING, 1);
 				else if (state == STATE_BEING_DEAD && current_health > 0) animate(STATE_WALKING, 1);
 				else current_frame = current_animation->get_frame(0);
 			}

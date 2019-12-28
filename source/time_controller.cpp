@@ -1,5 +1,7 @@
 #include "time_controller.h"
 
+Time_Controller Time_Controller::time_controller;
+
 Time_Controller::Time_Controller() {
 	delta_time = 0;
 	last_updated = 0;
@@ -25,5 +27,3 @@ void Time_Controller::reset() {
 	delta_time = 0;
 	last_updated = SDL_GetTicks();
 }
-
-Time_Controller Time_Controller::time_controller;
