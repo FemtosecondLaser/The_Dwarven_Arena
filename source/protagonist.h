@@ -5,7 +5,6 @@
 #include "living_entity.h"
 
 struct Protagonist : Living_Entity {
-	// animation names
 	static const char* a_idle_up;
 	static const char* a_idle_down;
 	static const char* a_idle_left;

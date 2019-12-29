@@ -27,6 +27,8 @@ Protagonist::Protagonist(Animation_Set* animation_set) {
 	move_speed_upper_limit = 50;
 	current_health = max_health = 20;
 	damage = 0;
+	can_be_passed_through = 1;
+	can_collide_with_non_pass_through_entities = 1;
 	collision_box_width = 14;
 	collision_box_height = 18;
 	collision_box_vertical_offset - 14;

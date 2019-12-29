@@ -8,6 +8,7 @@
 // labels
 #define L_PROTAGONIST "protagonist"
 #define L_ENEMY "enemy"
+#define L_WALL "wall"
 
 struct Entity {
 	enum Entity_Direction {
