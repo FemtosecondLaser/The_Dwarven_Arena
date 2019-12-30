@@ -34,5 +34,15 @@ namespace AnimationWrapper
             return fileSystem.Directory.EnumerateFiles(repositoryDirectory, $"*{animationSetFileExtension}")
                 .Select(fName => fileSystem.Path.GetFileNameWithoutExtension(fName));
         }
+
+        public bool AnimationSetExists(string animationSetName)
+        {
+            if (animationSetName == null)
+                throw new ArgumentNullException(nameof(animationSetName));
+
+            return fileSystem.File.Exists(
+                fileSystem.Path.Combine(repositoryDirectory, $"{animationSetName}{animationSetFileExtension}")
+                );
+        }
     }
 }

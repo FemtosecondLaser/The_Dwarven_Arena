@@ -174,7 +174,8 @@ namespace AnimationWrapper
             var errorlist = new List<ValidationResult>();
             if (String.IsNullOrEmpty(AnimationSetName))
                 errorlist.Add(new ValidationResult("Animation set name must not be empty."));
-            // TODO: check does not exist (via repository).
+            if (AnimationSetName == null ? false : animationSetRepository.AnimationSetExists(AnimationSetName))
+                errorlist.Add(new ValidationResult("Animation set name must not be taken."));
             errorsContainer.SetErrors(nameof(AnimationSetName), errorlist);
         }
     }
