@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace AnimationWrapper
 {
@@ -43,6 +45,78 @@ namespace AnimationWrapper
             return fileSystem.File.Exists(
                 fileSystem.Path.Combine(repositoryDirectory, $"{animationSetName}{animationSetFileExtension}")
                 );
+        }
+
+        public async Task CreateAnimationSet(string spriteSheetFilePath, string animationSetName)
+        {
+            if (spriteSheetFilePath == null)
+                throw new ArgumentNullException(nameof(spriteSheetFilePath));
+
+            if (animationSetName == null)
+                throw new ArgumentNullException(nameof(animationSetName));
+
+            var spriteSheetFileName =
+                fileSystem.Path.HasExtension(spriteSheetFilePath) ?
+                $"{animationSetName}{fileSystem.Path.GetExtension(spriteSheetFilePath)}" :
+                animationSetName;
+
+            var animationSetFilePath =
+                fileSystem.Path.Combine(repositoryDirectory, $"{animationSetName}{animationSetFileExtension}");
+
+            await CopyFileAsync(
+                spriteSheetFilePath,
+                fileSystem.Path.Combine(repositoryDirectory, spriteSheetFileName),
+                true
+                ).ConfigureAwait(false);
+
+            using (var animationSetFileStream =
+                fileSystem.FileStream.Create(
+                    animationSetFilePath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None
+                ))
+            using (var animationSetFileStreamWriter =
+                new StreamWriter(
+                    animationSetFileStream,
+                    leaveOpen: true
+                    ))
+                await animationSetFileStreamWriter.WriteLineAsync(
+                    $"sprite_sheet_file_name {spriteSheetFileName.Length} {spriteSheetFileName}"
+                    );
+        }
+
+        private async Task CopyFileAsync(string fromFilePath, string toFilePath, bool overwriteFile)
+        {
+            if (fromFilePath == null)
+                throw new ArgumentNullException(nameof(fromFilePath));
+
+            if (toFilePath == null)
+                throw new ArgumentNullException(nameof(toFilePath));
+
+            using (var fromFileStream =
+                fileSystem.FileStream.Create(
+                    fromFilePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read
+                    ))
+            using (var toFileStream =
+                fileSystem.FileStream.Create(
+                    toFilePath,
+                    overwriteFile ? FileMode.Create : FileMode.CreateNew,
+                    FileAccess.Write,
+                    FileShare.None
+                    ))
+                await fromFileStream.CopyToAsync(toFileStream).ConfigureAwait(false);
+
+            var fromFileInfo = fileSystem.FileInfo.FromFileName(fromFilePath);
+            var toFileInfo = fileSystem.FileInfo.FromFileName(toFilePath);
+
+            toFileInfo.CreationTime = fromFileInfo.CreationTime;
+            toFileInfo.LastWriteTime = fromFileInfo.LastWriteTime;
+            toFileInfo.LastAccessTime = fromFileInfo.LastAccessTime;
+            toFileInfo.Attributes = fromFileInfo.Attributes;
         }
     }
 }

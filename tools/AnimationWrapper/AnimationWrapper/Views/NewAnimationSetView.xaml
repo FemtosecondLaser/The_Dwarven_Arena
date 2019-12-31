@@ -34,13 +34,15 @@
                         <ColumnDefinition/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Grid.Column="0" Text="{Binding SpriteSheetFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    <TextBox Grid.Column="0" x:Name="SpriteSheetFilePathTextBox" Text="{Binding SpriteSheetFilePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     <Button Grid.Column="1" Command="{Binding BrowseSpriteSheetFilePathCommand}">Browse</Button>
                 </Grid>
+                <TextBlock Text="{Binding ElementName=SpriteSheetFilePathTextBox, Path=(Validation.Errors)/ErrorContent}" />
             </StackPanel>
             <StackPanel Grid.Row="1">
                 <Label>Animation set name:</Label>
-                <TextBox Text="{Binding AnimationSetName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBox x:Name="AnimationSetNameTextBox" Text="{Binding AnimationSetName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                <TextBlock Text="{Binding ElementName=AnimationSetNameTextBox, Path=(Validation.Errors)/ErrorContent}" />
             </StackPanel>
         </Grid>
     </DockPanel>

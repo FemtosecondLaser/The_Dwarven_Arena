@@ -3,6 +3,7 @@ using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Text;
 
 namespace AnimationWrapper
@@ -36,6 +37,10 @@ namespace AnimationWrapper
             this.eventAggregator
                 .GetEvent<NewAnimationSetRequested>()
                 .Subscribe(NewAnimationSetRequestedEventHandler, ThreadOption.UIThread, false);
+
+            this.eventAggregator
+                .GetEvent<NewAnimationSetFinished>()
+                .Subscribe(NewAnimationSetFinishedEventHandler, ThreadOption.UIThread, false);
 
             NavigateTo(this.animationSetView);
         }
@@ -75,11 +80,26 @@ namespace AnimationWrapper
             NavigateTo(newAnimationSetView);
         }
 
+        private void NewAnimationSetFinishedEventHandler()
+        {
+            // TODO: reusable concept
+            if (CanNavigateBack() && typeof(INewAnimationSetView).IsAssignableFrom(CurrentView.GetType()))
+                NavigateBack();
+            else
+                throw new InvalidOperationException(
+                    $"Can not navigate back or the current view is not {nameof(INewAnimationSetView)}"
+                    );
+        }
+
         public void Dispose()
         {
             eventAggregator
                 .GetEvent<NewAnimationSetRequested>()
                 .Unsubscribe(NewAnimationSetRequestedEventHandler);
+
+            eventAggregator
+                .GetEvent<NewAnimationSetFinished>()
+                .Unsubscribe(NewAnimationSetFinishedEventHandler);
         }
     }
 }

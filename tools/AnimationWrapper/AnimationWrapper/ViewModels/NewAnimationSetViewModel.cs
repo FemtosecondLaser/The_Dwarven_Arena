@@ -22,6 +22,7 @@ namespace AnimationWrapper
         private string animationSetName;
         private readonly DelegateCommand browseSpriteSheetFilePathCommand;
         private readonly DelegateCommand createAnimationSetCommand;
+        private bool canExecuteCreateAnimationSetCommand = true;
         private readonly DelegateCommand cancelCommand;
         private readonly ErrorsContainer<ValidationResult> errorsContainer;
 
@@ -61,16 +62,35 @@ namespace AnimationWrapper
 
             createAnimationSetCommand =
                 new DelegateCommand(
+                    async () =>
+                    {
+                        CanExecuteCreateAnimationSetCommand = false;
+
+                        try
+                        {
+                            ValidateSpriteSheetFilePath();
+                            ValidateAnimationSetName();
+                            if (HasErrors) return;
+
+                            await animationSetRepository.CreateAnimationSet(SpriteSheetFilePath, AnimationSetName);
+
+                            eventAggregator.GetEvent<NewAnimationSetFinished>().Publish();
+                        }
+                        finally
+                        {
+                            CanExecuteCreateAnimationSetCommand = true;
+                        }
+                    },
                     () =>
                     {
-                        ValidateSpriteSheetFilePath();
-                        ValidateAnimationSetName();
-                        if (HasErrors) return;
+                        return CanExecuteCreateAnimationSetCommand;
                     }
                     );
 
             cancelCommand =
-                new DelegateCommand(() => { });
+                new DelegateCommand(
+                    () => { eventAggregator.GetEvent<NewAnimationSetFinished>().Publish(); }
+                    );
         }
 
         public string SpriteSheetFilePath
@@ -127,6 +147,23 @@ namespace AnimationWrapper
             }
         }
 
+        public bool CanExecuteCreateAnimationSetCommand
+        {
+            get
+            {
+                return canExecuteCreateAnimationSetCommand;
+            }
+            private set
+            {
+                if (canExecuteCreateAnimationSetCommand != value)
+                {
+                    canExecuteCreateAnimationSetCommand = value;
+                    RaisePropertyChanged(nameof(CanExecuteCreateAnimationSetCommand));
+                    createAnimationSetCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         public ICommand CancelCommand
         {
             get
@@ -172,10 +209,12 @@ namespace AnimationWrapper
         private void ValidateAnimationSetName()
         {
             var errorlist = new List<ValidationResult>();
+
             if (String.IsNullOrEmpty(AnimationSetName))
                 errorlist.Add(new ValidationResult("Animation set name must not be empty."));
             if (AnimationSetName == null ? false : animationSetRepository.AnimationSetExists(AnimationSetName))
                 errorlist.Add(new ValidationResult("Animation set name must not be taken."));
+
             errorsContainer.SetErrors(nameof(AnimationSetName), errorlist);
         }
     }
