@@ -57,7 +57,7 @@ namespace AnimationWrapper
 
             browseSpriteSheetFilePathCommand =
                 new DelegateCommand(
-                    () => { SpriteSheetFilePath = fileSelectionProvider.SelectPngFile(); }
+                    () => { SpriteSheetFilePath = this.fileSelectionProvider.SelectPngFile(); }
                     );
 
             createAnimationSetCommand =
@@ -72,9 +72,9 @@ namespace AnimationWrapper
                             ValidateAnimationSetName();
                             if (HasErrors) return;
 
-                            await animationSetRepository.CreateAnimationSet(SpriteSheetFilePath, AnimationSetName);
+                            await this.animationSetRepository.CreateAnimationSet(SpriteSheetFilePath, AnimationSetName);
 
-                            eventAggregator.GetEvent<NewAnimationSetFinished>().Publish();
+                            this.eventAggregator.GetEvent<NewAnimationSetFinished>().Publish();
                         }
                         finally
                         {
@@ -89,7 +89,7 @@ namespace AnimationWrapper
 
             cancelCommand =
                 new DelegateCommand(
-                    () => { eventAggregator.GetEvent<NewAnimationSetFinished>().Publish(); }
+                    () => { this.eventAggregator.GetEvent<NewAnimationSetFinished>().Publish(); }
                     );
         }
 

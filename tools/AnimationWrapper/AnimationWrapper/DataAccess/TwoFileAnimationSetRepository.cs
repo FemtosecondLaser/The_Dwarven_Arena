@@ -31,6 +31,8 @@ namespace AnimationWrapper
             this.fileSystem = fileSystem;
         }
 
+        public event AnimationSetCreatedEventHandler AnimationSetCreated;
+
         public IEnumerable<string> GetAllAnimationSetNames()
         {
             return fileSystem.Directory.EnumerateFiles(repositoryDirectory, $"*{animationSetFileExtension}")
@@ -67,7 +69,7 @@ namespace AnimationWrapper
                 spriteSheetFilePath,
                 fileSystem.Path.Combine(repositoryDirectory, spriteSheetFileName),
                 true
-                ).ConfigureAwait(false);
+                );
 
             using (var animationSetFileStream =
                 fileSystem.FileStream.Create(
@@ -84,6 +86,8 @@ namespace AnimationWrapper
                 await animationSetFileStreamWriter.WriteLineAsync(
                     $"sprite_sheet_file_name {spriteSheetFileName.Length} {spriteSheetFileName}"
                     );
+
+            AnimationSetCreated?.Invoke(new AnimationSetCreatedEventArgs(animationSetName));
         }
 
         private async Task CopyFileAsync(string fromFilePath, string toFilePath, bool overwriteFile)

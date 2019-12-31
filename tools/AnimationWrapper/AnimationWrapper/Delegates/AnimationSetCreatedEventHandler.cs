@@ -1,0 +1,10 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+
+namespace AnimationWrapper
+{
+    public delegate void AnimationSetCreatedEventHandler(
+        AnimationSetCreatedEventArgs e
+        );
+}

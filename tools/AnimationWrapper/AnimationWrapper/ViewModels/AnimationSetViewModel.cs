@@ -10,7 +10,7 @@ using System.Windows.Input;
 
 namespace AnimationWrapper
 {
-    public class AnimationSetViewModel
+    public class AnimationSetViewModel : IDisposable
     {
         private readonly IAnimationSetRepository animationSetRepository;
         private readonly IEventAggregator eventAggregator;
@@ -31,7 +31,8 @@ namespace AnimationWrapper
             this.animationSetRepository = animationSetRepository;
             this.eventAggregator = eventAggregator;
 
-            // sub to events
+            this.animationSetRepository.AnimationSetCreated +=
+                AnimationSetRepository_AnimationSetCreated;
 
             animationSetNames =
                 new ObservableCollection<string>(
@@ -63,6 +64,19 @@ namespace AnimationWrapper
             {
                 return requestNewAnimationSetCommand;
             }
+        }
+
+        private void AnimationSetRepository_AnimationSetCreated(
+            AnimationSetCreatedEventArgs e
+            )
+        {
+            AnimationSetNames.Add(e.CreatedAnimationSetName);
+        }
+
+        public void Dispose()
+        {
+            this.animationSetRepository.AnimationSetCreated -=
+                AnimationSetRepository_AnimationSetCreated;
         }
     }
 }
