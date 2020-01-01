@@ -10,12 +10,15 @@ using System.Windows.Input;
 
 namespace AnimationWrapper
 {
-    public class AnimationSetViewModel : IDisposable
+    public class AnimationSetViewModel : BindableBase, IDisposable
     {
         private readonly IAnimationSetRepository animationSetRepository;
         private readonly IEventAggregator eventAggregator;
         private readonly ObservableCollection<string> animationSetNames;
         private readonly DelegateCommand requestNewAnimationSetCommand;
+        private readonly DelegateCommand<string> editAnimationSetCommand;
+        private readonly DelegateCommand<string> deleteAnimationSetCommand;
+        private bool canExecuteDeleteAnimationSetCommand = true;
 
         public AnimationSetViewModel(
             IAnimationSetRepository animationSetRepository,
@@ -31,13 +34,15 @@ namespace AnimationWrapper
             this.animationSetRepository = animationSetRepository;
             this.eventAggregator = eventAggregator;
 
-            this.animationSetRepository.AnimationSetCreated +=
-                AnimationSetRepository_AnimationSetCreated;
-
             animationSetNames =
                 new ObservableCollection<string>(
                     this.animationSetRepository.GetAllAnimationSetNames()
                     );
+
+            this.animationSetRepository.AnimationSetCreated +=
+                AnimationSetRepository_AnimationSetCreated;
+            this.animationSetRepository.AnimationSetDeleted +=
+                AnimationSetRepository_AnimationSetDeleted;
 
             requestNewAnimationSetCommand =
                 new DelegateCommand(
@@ -46,6 +51,42 @@ namespace AnimationWrapper
                         this.eventAggregator
                         .GetEvent<NewAnimationSetRequested>()
                         .Publish();
+                    }
+                    );
+
+            editAnimationSetCommand =
+                new DelegateCommand<string>(
+                    (animationSetName) =>
+                    {
+                        if (animationSetName == null)
+                            throw new ArgumentNullException(nameof(animationSetName));
+
+                        //TODO: implement
+                        throw new NotImplementedException();
+                    }
+                    );
+
+            deleteAnimationSetCommand =
+                new DelegateCommand<string>(
+                    async (animationSetName) =>
+                    {
+                        CanExecuteDeleteAnimationSetCommand = false;
+
+                        try
+                        {
+                            if (animationSetName == null)
+                                throw new ArgumentNullException(nameof(animationSetName));
+
+                            await this.animationSetRepository.DeleteAnimationSet(animationSetName);
+                        }
+                        finally
+                        {
+                            CanExecuteDeleteAnimationSetCommand = true;
+                        }
+                    },
+                    (animationSetName) =>
+                    {
+                        return CanExecuteDeleteAnimationSetCommand;
                     }
                     );
         }
@@ -66,6 +107,39 @@ namespace AnimationWrapper
             }
         }
 
+        public ICommand EditAnimationSetCommand
+        {
+            get
+            {
+                return editAnimationSetCommand;
+            }
+        }
+
+        public ICommand DeleteAnimationSetCommand
+        {
+            get
+            {
+                return deleteAnimationSetCommand;
+            }
+        }
+
+        public bool CanExecuteDeleteAnimationSetCommand
+        {
+            get
+            {
+                return canExecuteDeleteAnimationSetCommand;
+            }
+            private set
+            {
+                if (canExecuteDeleteAnimationSetCommand != value)
+                {
+                    canExecuteDeleteAnimationSetCommand = value;
+                    RaisePropertyChanged(nameof(CanExecuteDeleteAnimationSetCommand));
+                    deleteAnimationSetCommand.RaiseCanExecuteChanged();
+                }
+            }
+        }
+
         private void AnimationSetRepository_AnimationSetCreated(
             AnimationSetCreatedEventArgs e
             )
@@ -73,10 +147,19 @@ namespace AnimationWrapper
             AnimationSetNames.Add(e.CreatedAnimationSetName);
         }
 
+        private void AnimationSetRepository_AnimationSetDeleted(
+            AnimationSetDeletedEventArgs e
+            )
+        {
+            AnimationSetNames.Remove(e.DeletedAnimationSetName);
+        }
+
         public void Dispose()
         {
             this.animationSetRepository.AnimationSetCreated -=
                 AnimationSetRepository_AnimationSetCreated;
+            this.animationSetRepository.AnimationSetDeleted -=
+                AnimationSetRepository_AnimationSetDeleted;
         }
     }
 }

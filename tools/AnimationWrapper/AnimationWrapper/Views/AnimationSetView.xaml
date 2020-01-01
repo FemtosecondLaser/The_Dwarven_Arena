@@ -35,7 +35,11 @@
                         </Grid.ColumnDefinitions>
                         <TextBlock Grid.Column="0" Text="{Binding}" TextTrimming="CharacterEllipsis"/>
                         <Button Grid.Column="1">Edit</Button>
-                        <Button Grid.Column="2">Delete</Button>
+                        <Button Grid.Column="2"
+                                Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.DeleteAnimationSetCommand}"
+                                CommandParameter="{Binding}">
+                            Delete
+                        </Button>
                     </Grid>
                 </DataTemplate>
             </ListView.ItemTemplate>

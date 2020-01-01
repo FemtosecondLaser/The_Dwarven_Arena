@@ -32,6 +32,7 @@ namespace AnimationWrapper
         }
 
         public event AnimationSetCreatedEventHandler AnimationSetCreated;
+        public event AnimationSetDeletedEventHandler AnimationSetDeleted;
 
         public IEnumerable<string> GetAllAnimationSetNames()
         {
@@ -88,6 +89,46 @@ namespace AnimationWrapper
                     );
 
             AnimationSetCreated?.Invoke(new AnimationSetCreatedEventArgs(animationSetName));
+        }
+
+        public async Task DeleteAnimationSet(string animationSetName)
+        {
+            if (animationSetName == null)
+                throw new ArgumentNullException(nameof(animationSetName));
+
+            var animationSetFilePath =
+                fileSystem.Path.Combine(repositoryDirectory, $"{animationSetName}{animationSetFileExtension}");
+
+            using (var animationSetFileStream =
+                fileSystem.FileStream.Create(
+                    animationSetFilePath,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read
+                ))
+            using (var animationSetFileStreamWriter =
+                new StreamReader(
+                    animationSetFileStream,
+                    leaveOpen: true
+                    ))
+            {
+                string line;
+                while ((line = await animationSetFileStreamWriter.ReadLineAsync()) != null)
+                {
+                    if (line.StartsWith("sprite_sheet_file_name"))
+                    {
+                        string spriteSheetFileName = line.Substring(line.LastIndexOf(' ') + 1);
+                        fileSystem.File.Delete(
+                            fileSystem.Path.Combine(repositoryDirectory, spriteSheetFileName)
+                            );
+                        break;
+                    }
+                }
+            }
+
+            fileSystem.File.Delete(animationSetFilePath);
+
+            AnimationSetDeleted?.Invoke(new AnimationSetDeletedEventArgs(animationSetName));
         }
 
         private async Task CopyFileAsync(string fromFilePath, string toFilePath, bool overwriteFile)
