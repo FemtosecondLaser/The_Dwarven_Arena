@@ -14,11 +14,15 @@ namespace AnimationWrapper
         private readonly IEventAggregator eventAggregator;
         private readonly IAnimationSetView animationSetView;
         private readonly INewAnimationSetView newAnimationSetView;
+        private readonly IEditAnimationSetView editAnimationSetView;
+        private readonly INewAnimationView newAnimationView;
 
         public PresentingViewModel(
             IEventAggregator eventAggregator,
             IAnimationSetView animationSetView,
-            INewAnimationSetView newAnimationSetView
+            INewAnimationSetView newAnimationSetView,
+            IEditAnimationSetView editAnimationSetView,
+            INewAnimationView newAnimationView
             )
         {
             if (eventAggregator == null)
@@ -30,17 +34,41 @@ namespace AnimationWrapper
             if (newAnimationSetView == null)
                 throw new ArgumentNullException(nameof(newAnimationSetView));
 
+            if (editAnimationSetView == null)
+                throw new ArgumentNullException(nameof(editAnimationSetView));
+
+            if (newAnimationView == null)
+                throw new ArgumentNullException(nameof(newAnimationView));
+
             this.eventAggregator = eventAggregator;
             this.animationSetView = animationSetView;
             this.newAnimationSetView = newAnimationSetView;
+            this.editAnimationSetView = editAnimationSetView;
+            this.newAnimationView = newAnimationView;
 
             this.eventAggregator
-                .GetEvent<NewAnimationSetRequested>()
+                .GetEvent<NewAnimationSetRequestedEvent>()
                 .Subscribe(NewAnimationSetRequestedEventHandler, ThreadOption.UIThread, false);
 
             this.eventAggregator
-                .GetEvent<NewAnimationSetFinished>()
+                .GetEvent<NewAnimationSetFinishedEvent>()
                 .Subscribe(NewAnimationSetFinishedEventHandler, ThreadOption.UIThread, false);
+
+            this.eventAggregator
+                .GetEvent<EditAnimationSetRequestedEvent>()
+                .Subscribe(EditAnimationSetRequestedEventHandler, ThreadOption.UIThread, false);
+
+            this.eventAggregator
+                .GetEvent<EditAnimationSetFinishedEvent>()
+                .Subscribe(EditAnimationSetFinishedEventHandler, ThreadOption.UIThread, false);
+
+            this.eventAggregator
+                .GetEvent<NewAnimationRequestedEvent>()
+                .Subscribe(NewAnimationRequestedEventHandler, ThreadOption.UIThread, false);
+
+            this.eventAggregator
+                .GetEvent<NewAnimationFinishedEvent>()
+                .Subscribe(NewAnimationFinishedEventHandler, ThreadOption.UIThread, false);
 
             NavigateTo(this.animationSetView);
         }
@@ -75,6 +103,19 @@ namespace AnimationWrapper
                 throw new InvalidOperationException("Could not navigate back.");
         }
 
+        private void NavigateBackIfCurrentViewTypeIs(Type currentViewType)
+        {
+            if (currentViewType == null)
+                throw new ArgumentNullException(nameof(currentViewType));
+
+            if (CanNavigateBack() && currentViewType.IsAssignableFrom(CurrentView.GetType()))
+                NavigateBack();
+            else
+                throw new InvalidOperationException(
+                    $"Can not navigate back or the current view is not {currentViewType.Name}"
+                    );
+        }
+
         private void NewAnimationSetRequestedEventHandler()
         {
             NavigateTo(newAnimationSetView);
@@ -82,24 +123,60 @@ namespace AnimationWrapper
 
         private void NewAnimationSetFinishedEventHandler()
         {
-            // TODO: reusable concept
-            if (CanNavigateBack() && typeof(INewAnimationSetView).IsAssignableFrom(CurrentView.GetType()))
-                NavigateBack();
-            else
-                throw new InvalidOperationException(
-                    $"Can not navigate back or the current view is not {nameof(INewAnimationSetView)}"
-                    );
+            NavigateBackIfCurrentViewTypeIs(typeof(INewAnimationSetView));
+        }
+
+        private void EditAnimationSetRequestedEventHandler(string animationSetName)
+        {
+            if (animationSetName == null)
+                throw new ArgumentNullException(nameof(animationSetName));
+
+            NavigateTo(editAnimationSetView);
+        }
+
+        private void EditAnimationSetFinishedEventHandler()
+        {
+            NavigateBackIfCurrentViewTypeIs(typeof(IEditAnimationSetView));
+        }
+
+        private void NewAnimationRequestedEventHandler(AnimationSet animationSet)
+        {
+            if (animationSet == null)
+                throw new ArgumentNullException(nameof(animationSet));
+
+            NavigateTo(newAnimationView);
+        }
+
+        private void NewAnimationFinishedEventHandler()
+        {
+            NavigateBackIfCurrentViewTypeIs(typeof(INewAnimationView));
         }
 
         public void Dispose()
         {
             eventAggregator
-                .GetEvent<NewAnimationSetRequested>()
+                .GetEvent<NewAnimationSetRequestedEvent>()
                 .Unsubscribe(NewAnimationSetRequestedEventHandler);
 
             eventAggregator
-                .GetEvent<NewAnimationSetFinished>()
+                .GetEvent<NewAnimationSetFinishedEvent>()
                 .Unsubscribe(NewAnimationSetFinishedEventHandler);
+
+            eventAggregator
+                .GetEvent<EditAnimationSetRequestedEvent>()
+                .Unsubscribe(EditAnimationSetRequestedEventHandler);
+
+            eventAggregator
+                .GetEvent<EditAnimationSetFinishedEvent>()
+                .Unsubscribe(EditAnimationSetFinishedEventHandler);
+
+            eventAggregator
+                .GetEvent<NewAnimationRequestedEvent>()
+                .Unsubscribe(NewAnimationRequestedEventHandler);
+
+            eventAggregator
+                .GetEvent<NewAnimationFinishedEvent>()
+                .Unsubscribe(NewAnimationFinishedEventHandler);
         }
     }
 }

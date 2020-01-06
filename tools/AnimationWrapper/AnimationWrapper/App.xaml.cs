@@ -78,6 +78,26 @@ namespace AnimationWrapper
                 .AsSelf()
                 .SingleInstance();
 
+            builder
+                .RegisterType<EditAnimationSetView>()
+                .As<IEditAnimationSetView>()
+                .SingleInstance();
+
+            builder
+                .RegisterType<EditAnimationSetViewModel>()
+                .AsSelf()
+                .SingleInstance();
+
+            builder
+                .RegisterType<NewAnimationView>()
+                .As<INewAnimationView>()
+                .SingleInstance();
+
+            builder
+                .RegisterType<NewAnimationViewModel>()
+                .AsSelf()
+                .SingleInstance();
+
             container = builder.Build();
 
             container.Resolve<PresentingView>().Show();

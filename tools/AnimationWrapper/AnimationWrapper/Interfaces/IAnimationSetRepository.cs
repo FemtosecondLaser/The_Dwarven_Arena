@@ -11,7 +11,8 @@ namespace AnimationWrapper
         event AnimationSetDeletedEventHandler AnimationSetDeleted;
         IEnumerable<string> GetAllAnimationSetNames();
         bool AnimationSetExists(string animationSetName);
-        Task CreateAnimationSet(string spriteSheetFilePath, string animationSetName);
-        Task DeleteAnimationSet(string animationSetName);
+        Task CreateAnimationSetAsync(string spriteSheetFilePath, string animationSetName);
+        Task DeleteAnimationSetAsync(string animationSetName);
+        Task<AnimationSet> GetAnimationSetAsync(string animationSetName);
     }
 }

@@ -18,7 +18,7 @@ namespace AnimationWrapper
         private readonly DelegateCommand requestNewAnimationSetCommand;
         private readonly DelegateCommand<string> editAnimationSetCommand;
         private readonly DelegateCommand<string> deleteAnimationSetCommand;
-        private bool canExecuteDeleteAnimationSetCommand = true;
+        private bool canExecuteAnimationSetCommand = true;
 
         public AnimationSetViewModel(
             IAnimationSetRepository animationSetRepository,
@@ -49,7 +49,7 @@ namespace AnimationWrapper
                     () =>
                     {
                         this.eventAggregator
-                        .GetEvent<NewAnimationSetRequested>()
+                        .GetEvent<NewAnimationSetRequestedEvent>()
                         .Publish();
                     }
                     );
@@ -58,11 +58,26 @@ namespace AnimationWrapper
                 new DelegateCommand<string>(
                     (animationSetName) =>
                     {
-                        if (animationSetName == null)
-                            throw new ArgumentNullException(nameof(animationSetName));
+                        CanExecuteAnimationSetCommand = false;
 
-                        //TODO: implement
-                        throw new NotImplementedException();
+                        try
+                        {
+                            if (animationSetName == null)
+                                throw new ArgumentNullException(nameof(animationSetName));
+
+                            this.eventAggregator
+                            .GetEvent<EditAnimationSetRequestedEvent>()
+                            .Publish(animationSetName);
+                        }
+                        finally
+                        {
+                            CanExecuteAnimationSetCommand = true;
+                        }
+
+                    },
+                    (animationSetName) =>
+                    {
+                        return CanExecuteAnimationSetCommand;
                     }
                     );
 
@@ -70,23 +85,23 @@ namespace AnimationWrapper
                 new DelegateCommand<string>(
                     async (animationSetName) =>
                     {
-                        CanExecuteDeleteAnimationSetCommand = false;
+                        CanExecuteAnimationSetCommand = false;
 
                         try
                         {
                             if (animationSetName == null)
                                 throw new ArgumentNullException(nameof(animationSetName));
 
-                            await this.animationSetRepository.DeleteAnimationSet(animationSetName);
+                            await this.animationSetRepository.DeleteAnimationSetAsync(animationSetName);
                         }
                         finally
                         {
-                            CanExecuteDeleteAnimationSetCommand = true;
+                            CanExecuteAnimationSetCommand = true;
                         }
                     },
                     (animationSetName) =>
                     {
-                        return CanExecuteDeleteAnimationSetCommand;
+                        return CanExecuteAnimationSetCommand;
                     }
                     );
         }
@@ -123,18 +138,19 @@ namespace AnimationWrapper
             }
         }
 
-        public bool CanExecuteDeleteAnimationSetCommand
+        public bool CanExecuteAnimationSetCommand
         {
             get
             {
-                return canExecuteDeleteAnimationSetCommand;
+                return canExecuteAnimationSetCommand;
             }
             private set
             {
-                if (canExecuteDeleteAnimationSetCommand != value)
+                if (canExecuteAnimationSetCommand != value)
                 {
-                    canExecuteDeleteAnimationSetCommand = value;
-                    RaisePropertyChanged(nameof(CanExecuteDeleteAnimationSetCommand));
+                    canExecuteAnimationSetCommand = value;
+                    RaisePropertyChanged(nameof(CanExecuteAnimationSetCommand));
+                    editAnimationSetCommand.RaiseCanExecuteChanged();
                     deleteAnimationSetCommand.RaiseCanExecuteChanged();
                 }
             }

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AnimationWrapper
 {
-    public class NewAnimationSetFinished : PubSubEvent
+    public class EditAnimationSetRequestedEvent : PubSubEvent<string>
     {
     }
 }

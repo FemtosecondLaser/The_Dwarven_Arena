@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -50,7 +51,7 @@ namespace AnimationWrapper
                 );
         }
 
-        public async Task CreateAnimationSet(string spriteSheetFilePath, string animationSetName)
+        public async Task CreateAnimationSetAsync(string spriteSheetFilePath, string animationSetName)
         {
             if (spriteSheetFilePath == null)
                 throw new ArgumentNullException(nameof(spriteSheetFilePath));
@@ -91,7 +92,7 @@ namespace AnimationWrapper
             AnimationSetCreated?.Invoke(new AnimationSetCreatedEventArgs(animationSetName));
         }
 
-        public async Task DeleteAnimationSet(string animationSetName)
+        public async Task DeleteAnimationSetAsync(string animationSetName)
         {
             if (animationSetName == null)
                 throw new ArgumentNullException(nameof(animationSetName));
@@ -106,14 +107,14 @@ namespace AnimationWrapper
                     FileAccess.Read,
                     FileShare.Read
                 ))
-            using (var animationSetFileStreamWriter =
+            using (var animationSetFileStreamReader =
                 new StreamReader(
                     animationSetFileStream,
                     leaveOpen: true
                     ))
             {
                 string line;
-                while ((line = await animationSetFileStreamWriter.ReadLineAsync()) != null)
+                while ((line = await animationSetFileStreamReader.ReadLineAsync()) != null)
                 {
                     if (line.StartsWith("sprite_sheet_file_name"))
                     {
@@ -162,6 +163,143 @@ namespace AnimationWrapper
             toFileInfo.LastWriteTime = fromFileInfo.LastWriteTime;
             toFileInfo.LastAccessTime = fromFileInfo.LastAccessTime;
             toFileInfo.Attributes = fromFileInfo.Attributes;
+        }
+
+        public async Task<AnimationSet> GetAnimationSetAsync(string animationSetName)
+        {
+            if (animationSetName == null)
+                throw new ArgumentNullException(nameof(animationSetName));
+
+            var animationSetFilePath =
+                fileSystem.Path.Combine(repositoryDirectory, $"{animationSetName}{animationSetFileExtension}");
+
+            var animationSet = new AnimationSet();
+
+            using (var animationSetReader = new StreamReader(animationSetFilePath))
+            {
+                string line;
+                while ((line = await animationSetReader.ReadLineAsync()) != null)
+                {
+                    var lineComponents = line.Split(' ');
+
+                    switch (lineComponents[0])
+                    {
+                        case "sprite_sheet_file_name":
+                            animationSet.SpriteSheetFileName = lineComponents[2];
+                            break;
+
+                        case "animation_start":
+                            animationSet.Animations.Add(
+                                await GetAnimationAsync(animationSetReader).ConfigureAwait(false)
+                                );
+                            break;
+
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            return animationSet;
+        }
+
+        private async Task<Animation> GetAnimationAsync(StreamReader animationSetReader)
+        {
+            if (animationSetReader == null)
+                throw new ArgumentNullException(nameof(animationSetReader));
+
+            var animation = new Animation();
+
+            string line;
+            while ((line = await animationSetReader.ReadLineAsync()) != null)
+            {
+                var lineComponents = line.Split(' ');
+
+                switch (lineComponents[0])
+                {
+                    case "name":
+                        animation.Name = lineComponents[1];
+                        break;
+
+                    case "frame_start":
+                        animation.Frames.Add(
+                            await GetFrameAsync(animationSetReader).ConfigureAwait(false)
+                            );
+                        break;
+
+                    case "animation_end":
+                        goto exit;
+
+                    default:
+                        break;
+                }
+            }
+
+        exit:
+            return animation;
+        }
+
+        private async Task<Frame> GetFrameAsync(StreamReader animationSetReader)
+        {
+            if (animationSetReader == null)
+                throw new ArgumentNullException(nameof(animationSetReader));
+
+            var frame = new Frame();
+
+            string line;
+            while ((line = await animationSetReader.ReadLineAsync()) != null)
+            {
+                var lineComponents = line.Split(' ');
+
+                switch (lineComponents[0])
+                {
+                    case "clip_zone":
+                        Rectangle clipZone = new Rectangle();
+                        clipZone.X = int.Parse(lineComponents[1]);
+                        clipZone.Y = int.Parse(lineComponents[2]);
+                        clipZone.Width = int.Parse(lineComponents[3]);
+                        clipZone.Height = int.Parse(lineComponents[4]);
+                        frame.ClipZone = clipZone;
+                        break;
+
+                    case "duration":
+                        frame.Duration = float.Parse(lineComponents[1]);
+                        break;
+
+                    case "offset":
+                        Point offset = new Point();
+                        offset.X = int.Parse(lineComponents[1]);
+                        offset.Y = int.Parse(lineComponents[2]);
+                        frame.Offset = offset;
+                        break;
+
+                    case "is_damaging":
+                        frame.IsDamaging = int.Parse(lineComponents[1]) != 0;
+                        break;
+
+                    case "hitbox":
+                        Rectangle hitbox = new Rectangle();
+                        hitbox.X = int.Parse(lineComponents[1]);
+                        hitbox.Y = int.Parse(lineComponents[2]);
+                        hitbox.Width = int.Parse(lineComponents[3]);
+                        hitbox.Height = int.Parse(lineComponents[4]);
+                        frame.Hitbox = hitbox;
+                        break;
+
+                    case "damage":
+                        frame.Damage = int.Parse(lineComponents[1]);
+                        break;
+
+                    case "frame_end":
+                        goto exit;
+
+                    default:
+                        break;
+                }
+            }
+
+        exit:
+            return frame;
         }
     }
 }

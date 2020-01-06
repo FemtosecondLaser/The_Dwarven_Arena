@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.IO.Abstractions;
+using System.Linq;
 using System.Text;
 using System.Windows.Input;
 
@@ -72,9 +73,9 @@ namespace AnimationWrapper
                             ValidateAnimationSetName();
                             if (HasErrors) return;
 
-                            await this.animationSetRepository.CreateAnimationSet(SpriteSheetFilePath, AnimationSetName);
+                            await this.animationSetRepository.CreateAnimationSetAsync(SpriteSheetFilePath, AnimationSetName);
 
-                            this.eventAggregator.GetEvent<NewAnimationSetFinished>().Publish();
+                            this.eventAggregator.GetEvent<NewAnimationSetFinishedEvent>().Publish();
                         }
                         finally
                         {
@@ -89,7 +90,7 @@ namespace AnimationWrapper
 
             cancelCommand =
                 new DelegateCommand(
-                    () => { this.eventAggregator.GetEvent<NewAnimationSetFinished>().Publish(); }
+                    () => { this.eventAggregator.GetEvent<NewAnimationSetFinishedEvent>().Publish(); }
                     );
         }
 
@@ -202,7 +203,7 @@ namespace AnimationWrapper
                 errorlist.Add(new ValidationResult("Sprite sheet file must exist."));
             if (fileSystem.Path.GetExtension(SpriteSheetFilePath)?.ToLower() != ".png")
                 errorlist.Add(new ValidationResult("Sprite sheet file must have .png extension."));
-            
+
             errorsContainer.SetErrors(nameof(SpriteSheetFilePath), errorlist);
         }
 
@@ -212,6 +213,8 @@ namespace AnimationWrapper
 
             if (String.IsNullOrEmpty(AnimationSetName))
                 errorlist.Add(new ValidationResult("Animation set name must not be empty."));
+            if (AnimationSetName == null ? false : AnimationSetName.Any(char.IsWhiteSpace))
+                errorlist.Add(new ValidationResult("Animation set name must not contain white space."));
             if (AnimationSetName == null ? false : animationSetRepository.AnimationSetExists(AnimationSetName))
                 errorlist.Add(new ValidationResult("Animation set name must not be taken."));
 

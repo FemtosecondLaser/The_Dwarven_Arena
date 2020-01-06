@@ -1,0 +1,65 @@
+﻿<UserControl x:Class="AnimationWrapper.EditAnimationSetView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:AnimationWrapper"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <DockPanel>
+        <Grid DockPanel.Dock="Bottom">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Button Grid.Column="0" Grid.ColumnSpan="2" Grid.Row="0" Command="{Binding NewAnimationCommand}">New Animation</Button>
+            <Button Grid.Column="0" Grid.Row="1" Command="{Binding SaveAndReturnCommand}">Save and Return</Button>
+            <Button Grid.Column="1" Grid.Row="1" Command="{Binding CancelCommand}">Cancel</Button>
+        </Grid>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <StackPanel Grid.Row="0">
+                <Label>Sprite sheet file name:</Label>
+                <TextBlock Text="{Binding CurrentlyEditedAnimationSet.SpriteSheetFileName}" TextTrimming="CharacterEllipsis"/>
+            </StackPanel>
+            <ListView Grid.Row="1" ItemsSource="{Binding CurrentlyEditedAnimationSet.Animations}">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Focusable" Value="False"/>
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Grid.IsSharedSizeScope="True">
+                            <Grid.Resources>
+                                <Style TargetType="Button">
+                                    <Setter Property="Margin" Value="5,0,0,0"/>
+                                </Style>
+                            </Grid.Resources>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Buttons"/>
+                                <ColumnDefinition Width="Auto" SharedSizeGroup="Buttons"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
+                            <Button Grid.Column="1">
+                                Edit
+                            </Button>
+                            <Button Grid.Column="2">
+                                Delete
+                            </Button>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
+    </DockPanel>
+</UserControl>
