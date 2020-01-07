@@ -50,10 +50,12 @@
                                 <ColumnDefinition Width="Auto" SharedSizeGroup="Buttons"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Grid.Column="0" Text="{Binding Name}" TextTrimming="CharacterEllipsis"/>
-                            <Button Grid.Column="1">
+                            <Button Grid.Column="1" Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.EditAnimationCommand}"
+                                    CommandParameter="{Binding}">
                                 Edit
                             </Button>
-                            <Button Grid.Column="2">
+                            <Button Grid.Column="2" Command="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=DataContext.DeleteAnimationCommand}"
+                                    CommandParameter="{Binding}">
                                 Delete
                             </Button>
                         </Grid>

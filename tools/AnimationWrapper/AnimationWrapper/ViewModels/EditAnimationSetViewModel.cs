@@ -15,6 +15,8 @@ namespace AnimationWrapper
         private readonly DelegateCommand newAnimationCommand;
         private readonly DelegateCommand saveAndReturnCommand;
         private readonly DelegateCommand cancelCommand;
+        private readonly DelegateCommand<Animation> editAnimationCommand;
+        private readonly DelegateCommand<Animation> deleteAnimationCommand;
         private bool canExecuteCommands = true;
         private AnimationSet currentlyEditedAnimationSet;
 
@@ -73,6 +75,41 @@ namespace AnimationWrapper
                     return CanExecuteCommands;
                 }
                 );
+
+            editAnimationCommand =
+                new DelegateCommand<Animation>(
+                    (animation) =>
+                    {
+                        if (animation == null)
+                            throw new ArgumentNullException(nameof(animation));
+
+                        //TODO: implement
+                        throw new NotImplementedException();
+
+                        //this.eventAggregator
+                        //.GetEvent<EditAnimationRequestedEvent>()
+                        //.Publish(animationName);
+                    },
+                    (animation) =>
+                    {
+                        return CanExecuteCommands;
+                    }
+                    );
+
+            deleteAnimationCommand =
+                new DelegateCommand<Animation>(
+                    (animation) =>
+                    {
+                        if (animation == null)
+                            throw new ArgumentNullException(nameof(animation));
+
+                        CurrentlyEditedAnimationSet.Animations.Remove(animation);
+                    },
+                    (animation) =>
+                    {
+                        return CanExecuteCommands;
+                    }
+                    );
         }
 
         public ICommand NewAnimationCommand
@@ -99,6 +136,22 @@ namespace AnimationWrapper
             }
         }
 
+        public ICommand EditAnimationCommand
+        {
+            get
+            {
+                return editAnimationCommand;
+            }
+        }
+
+        public ICommand DeleteAnimationCommand
+        {
+            get
+            {
+                return deleteAnimationCommand;
+            }
+        }
+
         public bool CanExecuteCommands
         {
             get
@@ -114,6 +167,8 @@ namespace AnimationWrapper
                     newAnimationCommand.RaiseCanExecuteChanged();
                     saveAndReturnCommand.RaiseCanExecuteChanged();
                     cancelCommand.RaiseCanExecuteChanged();
+                    editAnimationCommand.RaiseCanExecuteChanged();
+                    deleteAnimationCommand.RaiseCanExecuteChanged();
                 }
             }
         }
